@@ -112,6 +112,18 @@ export default function App() {
     setConverted(buildAll(flipped));
   }
 
+  function clearAll() {
+    setInput('');
+    setError(null);
+    setStatus('idle');
+    setConverted(null);
+    setInfo(null);
+    setLiveBalance(null);
+    setLiveState(null);
+    setLiveStatus('idle');
+    setLiveError(null);
+  }
+
   async function lookupLive() {
     if (!converted) return;
     setLiveStatus('loading');
@@ -147,7 +159,8 @@ export default function App() {
             onInput={(e) => setInput((e.currentTarget as HTMLTextAreaElement).value)}
           />
           <div class="actions">
-            <button type="submit" class="primary">Convert</button>
+            <button type="submit" class="primary" disabled={status === 'loading'}>Convert</button>
+            <button type="button" class="ghost" onClick={clearAll}>Clear</button>
             <button type="button" class="ghost" onClick={lookupLive} disabled={!converted || liveStatus === 'loading'}>
               {liveStatus === 'loading' ? 'Looking up...' : 'Lookup on testnet'}
             </button>
