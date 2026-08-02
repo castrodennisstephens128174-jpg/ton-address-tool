@@ -1,4 +1,4 @@
-import { useState } from 'preact/hooks';
+import { useEffect, useState } from 'preact/hooks';
 import {
   detectKind,
   parseFriendly,
@@ -57,6 +57,8 @@ function Copyable({ value }: { value: string }) {
     </div>
   );
 }
+
+const STORAGE_KEY = 'ton-address-tool:last-input';
 
 export default function App() {
   const [input, setInput] = useState('EQDrLq-X6jKZNHAScgghh0h1iog3StK71zn8dcmrOj8jPWRA');
@@ -122,7 +124,31 @@ export default function App() {
     setLiveState(null);
     setLiveStatus('idle');
     setLiveError(null);
+    localStorage.removeItem(STORAGE_KEY);
   }
+
+  useEffect(() => {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      setInput(saved);
+      try {
+        const parsed = convertAddress(saved);
+        if (parsed.kind !== 'invalid') {
+          setConverted(parsed);
+          setInfo(null);
+          setStatus('done');
+        }
+      } catch {
+        setStatus('idle');
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    if (status === 'done' && converted && input.trim()) {
+      localStorage.setItem(STORAGE_KEY, input.trim());
+    }
+  }, [status, converted, input]);
 
   async function lookupLive() {
     if (!converted) return;
