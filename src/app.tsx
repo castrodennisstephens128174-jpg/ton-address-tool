@@ -51,7 +51,7 @@ function Copyable({ value }: { value: string }) {
   return (
     <div class="row">
       <code class="addr">{value}</code>
-      <button type="button" class="copy" onClick={copy}>
+      <button type="button" class="copy" onClick={copy} aria-label={`Copy ${value}`}>
         {copied ? 'Copied' : 'Copy'}
       </button>
     </div>
@@ -131,21 +131,23 @@ export default function App() {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
       setInput(saved);
-      try {
-        const parsed = convertAddress(saved);
-        if (parsed.kind !== 'invalid') {
-          setConverted(parsed);
-          setInfo(null);
-          setStatus('done');
+      const kind = detectKind(saved.trim());
+      if (kind !== 'invalid') {
+        try {
+          const parsed = kind === 'friendly' ? parseFriendly(saved.trim()) : parseRaw(saved.trim());
+          setInfo(parsed);
+          setConverted(buildAll(parsed));
+          setError(null);
+          setStatus('ok');
+        } catch {
+          setStatus('idle');
         }
-      } catch {
-        setStatus('idle');
       }
     }
   }, []);
 
   useEffect(() => {
-    if (status === 'done' && converted && input.trim()) {
+    if (status === 'ok' && converted && input.trim()) {
       localStorage.setItem(STORAGE_KEY, input.trim());
     }
   }, [status, converted, input]);
