@@ -181,7 +181,12 @@ export const TONCENTER_TESTNET = 'https://testnet.toncenter.com/api/v2';
 
 export async function fetchAccountState(address: string): Promise<{ balance: string; state: string } > {
   const url = `${TONCENTER_TESTNET}/getAddressInformation?address=${encodeURIComponent(address)}`;
-  const res = await fetch(url);
+  let res: Response;
+  try {
+    res = await fetch(url);
+  } catch (err) {
+    throw new Error(`Network error reaching toncenter testnet: ${(err as Error).message || 'request failed'}`);
+  }
   if (!res.ok) throw new Error(`toncenter HTTP ${res.status}`);
   const json = await res.json();
   if (!json.ok) throw new Error(json.error || 'toncenter returned not ok');
